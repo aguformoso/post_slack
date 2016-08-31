@@ -1,0 +1,36 @@
+#!/bin/bash
+
+type curl &> /dev/null || { echo "cURL not installed, sorry...!" && exit 1; }
+
+# Default values
+COLOR="''"
+URL="$SLACK_URL"  # Get env variable
+while true; do
+  case "$1" in
+    -t | --title ) TITLE=$2; shift 2 ;;
+    -b | --body ) BODY=$2; shift 2 ;;
+    -c | --color ) COLOR=$2; shift 2 ;;
+    -u | --url ) URL=$2; shift 2 ;;
+    -h | --help ) HELP=true; shift ;;
+    -- ) shift; break ;;
+    * ) break ;;
+  esac
+done
+
+colors="good warning danger error ''"
+
+[[ $colors =~ $COLOR ]] || echo "Invalid COLOR option. Valid options: $colors"
+
+BODY="$BODY (hostname: $(hostname))"
+
+json="{
+  \"username\":\"$TITLE\",
+  \"attachments\": [
+        {
+          \"color\":\"$color\",
+          \"text\":\"$BODY\"
+        }
+      ]
+    }"
+
+curl -X POST --data-urlencode "payload=$json" $URL
